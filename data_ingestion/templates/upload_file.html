@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Upload PDF file</h1>
+    
+    {% if error_message %}
+        <div class="error">{{ error_message }}</div>
+    {% endif %}
+    
+    <form action="{% url 'upload_file' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="company">Select Company:</label>
+        <select name="company" id="company" required>
+            {% for company in companies %}
+                <option value="{{ company.id }}">{{ company.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="file" name="pdf_file" accept="application/pdf" required>
+        <button type="submit">Upload</button>
+    </form>
+{% endblock %}
