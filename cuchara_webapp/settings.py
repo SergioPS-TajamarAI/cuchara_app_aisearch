@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'data_ingestion'
+    'data_ingestion',
+    'chat'
 
 ]
 
@@ -133,3 +134,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 BLOB_CONTAINER = os.getenv('BLOB_CONTAINER')
 BLOB_CLIENT = os.getenv('BLOB_CLIENT')
 BLOB_KEY = os.getenv('BLOB_KEY')
+SEARCH_ENDPOINT=os.getenv('SEARCH_ENDPOINT')
+SEARCH_INDEX_NAME=os.getenv('SEARCH_INDEX_NAME')
+SEARCH_API_KEY=os.getenv('SEARCH_API_KEY')

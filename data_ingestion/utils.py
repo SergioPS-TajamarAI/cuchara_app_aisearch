@@ -38,3 +38,10 @@ def blob_exists(blob_name):
         print(f"Exception: {ex}")
         return False
 
+def get_pdf(file_name):
+    blob_service_client = BlobServiceClient(account_url=settings.BLOB_CLIENT, credential=settings.BLOB_KEY)
+    container_client = blob_service_client.get_container_client(settings.BLOB_CONTAINER)
+    blob_client = container_client.get_blob_client(file_name)
+    download_stream = blob_client.download_blob()
+    return download_stream.readall()
+

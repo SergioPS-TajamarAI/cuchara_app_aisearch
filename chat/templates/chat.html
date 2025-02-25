@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Search</h1>
+<form method="post">
+    {% csrf_token %}
+    <input type="text" name="q" value="{{ query }}" placeholder="Enter keyword">
+    <button type="submit">Search</button>
+</form>
+
+{% if results %}
+    <h2>Results</h2>
+    <p>Los siguientes restaurantes tienen el término buscado dentro de su menú:</p>
+    <ul>
+        {% for result in results %}
+            <li>
+                <form method="post" action="{% url 'get_file' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="file_name" value="{{ result.metadata_storage_name }}">
+                    <button type="submit">{{ result.metadata_storage_name }}</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}
