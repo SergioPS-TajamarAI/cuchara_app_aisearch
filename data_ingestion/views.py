@@ -31,7 +31,10 @@ def create_company(request):
     if request.method == 'POST':
         form = CompanyForm(request.POST)
         if form.is_valid():
-            form.save()
+            company = form.save(commit=False)
+            company.latitude = request.POST.get('latitude')
+            company.longitude = request.POST.get('longitude')
+            company.save()
             return redirect('upload_file')  # Assuming you have a view to list companies
     else:
         form = CompanyForm()

@@ -5,7 +5,7 @@
 <form method="post">
     {% csrf_token %}
     <input type="text" name="q" value="{{ query }}" placeholder="Enter keyword">
-    <button type="submit">Search</button>
+    <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
 {% if results %}
@@ -13,12 +13,23 @@
     <p>Los siguientes restaurantes tienen el término buscado dentro de su menú:</p>
     <ul>
         {% for result in results %}
-            <li>
+            <li class="container border p-3 mb-3">
+                <h5>Descarga el menú aqui:</h5>
                 <form method="post" action="{% url 'get_file' %}">
                     {% csrf_token %}
                     <input type="hidden" name="file_name" value="{{ result.metadata_storage_name }}">
-                    <button type="submit">{{ result.metadata_storage_name }}</button>
+                    <button type="submit" class="btn btn-secondary">{{ result.metadata_storage_name }}</button>
                 </form>
+
+                <form method="post" action="{% url 'menu_description' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="raw_content" value="{{ result.content }}">
+                    <button type="submit" class="btn btn-info">Get Menu Description</button>
+                </form>
+
+                <br>
+
+                <!-- <p>RAW CONTENT: {{result.content}}</p> -->
             </li>
         {% endfor %}
     </ul>

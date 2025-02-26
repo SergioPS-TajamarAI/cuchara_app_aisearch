@@ -7,6 +7,8 @@ class Company(models.Model):
     description = models.TextField()
     city = models.CharField(max_length=100)
     website = models.URLField()
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return self.name
