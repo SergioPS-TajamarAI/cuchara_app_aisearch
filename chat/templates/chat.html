@@ -5,6 +5,10 @@
 <form method="post">
     {% csrf_token %}
     <input type="text" name="q" value="{{ query }}" placeholder="Enter keyword">
+    <p>Selecciona la ubicación donde te encuentras, para buscar el restaurante más cercano</p>
+    <div id="map" style="height: 400px; width: 100%;"></div>
+    <input type="hidden" id="latitude" name="latitude">
+    <input type="hidden" id="longitude" name="longitude">
     <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
@@ -14,7 +18,8 @@
     <ul>
         {% for result in results %}
             <li class="container border p-3 mb-3">
-                <h5>Descarga el menú aqui:</h5>
+                <h5>Descarga el menú aqui de {{result.company_name}}:</h5>
+                <p>Distance: {{ result.distance }} km</p>
                 <form method="post" action="{% url 'get_file' %}">
                     {% csrf_token %}
                     <input type="hidden" name="file_name" value="{{ result.metadata_storage_name }}">
@@ -34,4 +39,30 @@
         {% endfor %}
     </ul>
 {% endif %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var map = L.map('map').setView([40.39043439916734, -3.7866985501527037], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var marker;
+
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
+
+            if (marker) {
+                map.removeLayer(marker);
+            }
+
+            marker = L.marker([lat, lng]).addTo(map);
+
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lng;
+        });
+    });
+</script>
 {% endblock %}

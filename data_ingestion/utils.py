@@ -14,14 +14,14 @@ def get_container_client():
         container_client.create_container()
     return container_client
 
-def upload_file_to_blob_storage(file, blob_name):
+def upload_file_to_blob_storage(file, blob_name, company):
     try:
         container_client = get_container_client()
         # Create a blob client using the local file name as the name for the blob
         blob_client = container_client.get_blob_client(blob=blob_name)
         
-        # Upload the file
-        blob_client.upload_blob(file.read())
+        # Upload the file with metadata
+        blob_client.upload_blob(file.read(), metadata={'company_name': company.name, 'longitude': str(company.longitude), 'latitude': str(company.latitude)})
         
         print(f"File uploaded to blob storage as {blob_name}")
         return blob_client.url

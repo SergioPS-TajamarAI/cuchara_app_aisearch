@@ -9,6 +9,7 @@ def upload_file(request):
         company_id = request.POST.get('company')
         file = request.FILES['pdf_file']
         company = Company.objects.get(id=company_id)
+        print(company.name)
         
         # Upload file directly to blob storage
         blob_name = file.name
@@ -17,7 +18,7 @@ def upload_file(request):
             companies = Company.objects.all()
             return render(request, 'upload_file.html', {'companies': companies, 'error_message': error_message})
         
-        upload_file_to_blob_storage(file, blob_name)
+        upload_file_to_blob_storage(file, blob_name, company)
         
         # Create Files record
         Files.objects.create(file_path=blob_name, company=company)
@@ -39,3 +40,7 @@ def create_company(request):
     else:
         form = CompanyForm()
     return render(request, 'create_company.html', {'form': form})
+
+def map_view(request):
+    companies = Company.objects.all()
+    return render(request, 'map.html', {'companies': companies})

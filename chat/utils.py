@@ -11,6 +11,15 @@ def get_search_client():
     return SearchClient(endpoint=endpoint, index_name=index_name, credential=credential)
 
 def ask_indexer(query):
+    """
+    Queries the search client with the given query and returns the search results.
+
+    Args:
+        query (str): The query string to search for.
+
+    Returns:
+        list: A list of search results.
+    """
     client = get_search_client()
     results = client.search(query)
     return [result for result in results]
