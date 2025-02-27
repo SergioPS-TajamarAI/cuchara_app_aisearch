@@ -1,16 +1,22 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}
-<h1>Search</h1>
-<form method="post">
-    {% csrf_token %}
-    <input type="text" name="q" value="{{ query }}" placeholder="Enter keyword">
-    <p>Selecciona la ubicación donde te encuentras, para buscar el restaurante más cercano</p>
-    <div id="map" style="height: 400px; width: 100%;"></div>
-    <input type="hidden" id="latitude" name="latitude">
-    <input type="hidden" id="longitude" name="longitude">
-    <button type="submit" class="btn btn-primary">Search</button>
-</form>
+
+<div class="container my-4 bg-light rounded p-4" style="max-width: 800px;">
+    <h1>¿Qué deseas comer?</h1>
+    <p>Introduce lo que quieras comer</p>
+    <h3>{{user_location}}</h3>
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="q" id="search-input" class="form-control mb-3" value="{{ query }}" placeholder="Enter keyword">
+        <div id="suggestions" class="list-group"></div>
+        <p>Selecciona la ubicación donde te encuentras, para buscar el restaurante más cercano</p>
+        <div id="map" style="height: 400px; width: 100%;"></div>
+        <input type="hidden" id="latitude" name="latitude" value="{% if user_latitude %}{{ user_latitude }}{% endif %}">
+        <input type="hidden" id="longitude" name="longitude" value="{% if user_longitude %}{{ user_longitude }}{% endif %}">
+        <button type="submit" class="btn btn-primary mt-3">Search</button>
+    </form>
+</div>
 
 {% if results %}
     <h2>Results</h2>
@@ -20,6 +26,7 @@
             <li class="container border p-3 mb-3">
                 <h5>Descarga el menú aqui de {{result.company_name}}:</h5>
                 <p>Distance: {{ result.distance }} km</p>
+                <p>Coordinates: lat:{{result.latitude}}, lon:{{result.longitude}}</p>
                 <form method="post" action="{% url 'get_file' %}">
                     {% csrf_token %}
                     <input type="hidden" name="file_name" value="{{ result.metadata_storage_name }}">
@@ -33,7 +40,6 @@
                 </form>
 
                 <br>
-
                 <!-- <p>RAW CONTENT: {{result.content}}</p> -->
             </li>
         {% endfor %}
@@ -50,6 +56,14 @@
 
         var marker;
 
+        // Create custom icon for user location
+        var userIcon = L.icon({
+            iconUrl: '{% static "icons/marker.png" %}',
+            iconSize: [60, 60], // size of the icon
+            iconAnchor: [30, 30], // point of the icon which will correspond to marker's location
+            popupAnchor: [0, -30], // point from which the popup should open relative to the iconAnchor
+        });
+
         map.on('click', function(e) {
             var lat = e.latlng.lat;
             var lng = e.latlng.lng;
@@ -58,10 +72,50 @@
                 map.removeLayer(marker);
             }
 
-            marker = L.marker([lat, lng]).addTo(map);
+            marker = L.marker([lat, lng], {icon: userIcon}).addTo(map);
 
             document.getElementById('latitude').value = lat;
             document.getElementById('longitude').value = lng;
+        });
+
+        // Add markers for existing results
+        {% if results %}
+            {% for result in results %}
+                L.marker([{{ result.latitude }}, {{ result.longitude }}]).addTo(map)
+                    .bindPopup('<b>{{ result.company_name }}</b>').openPopup();
+            {% endfor %}
+        {% endif %}
+
+        // Add custom icon marker for user location if available
+        {% if user_latitude and user_longitude %}
+            L.marker([{{ user_latitude }}, {{ user_longitude }}], {icon: userIcon}).addTo(map)
+            .bindPopup('<b>Your Location</b>').openPopup();
+        {% endif %}
+
+        var searchInput = document.getElementById('search-input');
+        var suggestionsBox = document.getElementById('suggestions');
+
+        searchInput.addEventListener('input', function() {
+            var query = searchInput.value;
+            if (query.length > 2) {
+                fetch(`/keyword_suggester?q=${query}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        suggestionsBox.innerHTML = '';
+                        data.suggestions.forEach(suggestion => {
+                            var suggestionItem = document.createElement('a');
+                            suggestionItem.className = 'list-group-item list-group-item-action';
+                            suggestionItem.textContent = suggestion;
+                            suggestionItem.addEventListener('click', function() {
+                                searchInput.value = suggestion;
+                                suggestionsBox.innerHTML = '';
+                            });
+                            suggestionsBox.appendChild(suggestionItem);
+                        });
+                    });
+            } else {
+                suggestionsBox.innerHTML = '';
+            }
         });
     });
 </script>

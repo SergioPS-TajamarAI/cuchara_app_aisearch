@@ -9,10 +9,12 @@ def search_view(request):
     results = []
     if request.method == 'POST':
         query = request.POST.get('q', '')
-        latitude = request.POST.get('latitude')
-        longitude = request.POST.get('longitude')
-        user_location = (float(latitude), float(longitude)) if latitude and longitude else None
+        user_latitude = request.POST.get('latitude')
+        user_longitude = request.POST.get('longitude')
+        user_location = (float(user_latitude), float(user_longitude)) if user_latitude and user_longitude else None
         results = ask_indexer(query) if query else []
+
+        print(user_location)    
   
 
         if user_location:
@@ -21,6 +23,7 @@ def search_view(request):
                 company_location = (result['latitude'], result['longitude'])
                 result['distance'] = geodesic(user_location, company_location).km
             results = sorted(results, key=lambda x: x['distance'])
+            return render(request, 'chat.html', {'results': results, 'query': query, 'user_latitude': user_latitude, 'user_longitude': user_longitude})
 
     return render(request, 'chat.html', {'results': results, 'query': query})
 
