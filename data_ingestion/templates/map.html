@@ -1,7 +1,22 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div id="map" style="height: 600px;"></div>
+<div class="container my-4 bg-light rounded p-4" style="max-width: 1000px;">
+    <h1>Companies Map</h1>
+    
+    <div class="mb-4">
+        <p class="text-muted">Explore all registered companies on the map. Click each marker to view company details.</p>
+    </div>
+    
+    <div class="card">
+        <div class="card-body p-0">
+            <div id="map" style="height: 600px; width: 100%;" class="border rounded"></div>
+        </div>
+        <div class="card-footer bg-white text-muted small">
+            <i class="fa fa-info-circle"></i> Click on any marker to view company details.
+        </div>
+    </div>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -11,26 +26,50 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        var marker;
-
         map.on('click', function(e) {
             var lat = e.latlng.lat;
             var lng = e.latlng.lng;
-
-            if (marker) {
-                map.removeLayer(marker);
-            }
-
-            marker = L.marker([lat, lng]).addTo(map);
 
             document.getElementById('latitude').value = lat;
             document.getElementById('longitude').value = lng;
         });
 
         {% for company in companies %}
-            L.marker([{{ company.latitude }}, {{ company.longitude }}]).addTo(map)
-                .bindPopup('<b>{{ company.name }}</b>').openPopup();
+            L.marker([{{ company.latitude }}, {{ company.longitude }}])
+             .addTo(map)
+             .bindPopup('<div class="popup-content">' +
+                        '<h5>{{ company.name }}</h5>' +
+                        '<p>{{ company.description|truncatechars:100 }}</p>' +
+                        '<p><strong>City:</strong> {{ company.city }}</p>' +
+                        '{% if company.website %}<p><a href="{{ company.website }}" target="_blank">Visit website</a></p>{% endif %}' +
+                        '</div>');
         {% endfor %}
+        
+        // Adjust map to show all markers if there are companies
+        {% if companies %}
+        var markers = [
+            {% for company in companies %}
+                [{{ company.latitude }}, {{ company.longitude }}],
+            {% endfor %}
+        ];
+        
+        if (markers.length > 0) {
+            var bounds = L.latLngBounds(markers);
+            map.fitBounds(bounds.pad(0.1));
+        }
+        {% endif %}
     });
 </script>
+
+<style>
+    .popup-content h5 {
+        margin-top: 0;
+        margin-bottom: 8px;
+        color: #007bff;
+    }
+    
+    .popup-content p {
+        margin-bottom: 5px;
+    }
+</style>
 {% endblock %}

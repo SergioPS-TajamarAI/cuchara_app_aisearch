@@ -1,39 +1,68 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<div class="container my-4 bg-light rounded p-4" style="max-width: 800px;">
     <h1>Create a New Company</h1>
+    
+    {% if error_message %}
+        <div class="alert alert-danger">{{ error_message }}</div>
+    {% endif %}
+    
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <div id="map" style="height: 400px; width: 100%;"></div>
-        <input type="hidden" id="latitude" name="latitude">
-        <input type="hidden" id="longitude" name="longitude">
-        <button class="btn btn-success m-4" type="submit">Create</button>
+        
+        {% for field in form %}
+        <div class="form-group mb-3">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+                <small class="form-text text-muted">{{ field.help_text }}</small>
+            {% endif %}
+            {% if field.errors %}
+                <div class="invalid-feedback d-block">
+                    {% for error in field.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <div class="form-group mb-4">
+            <label for="map">Company Location:</label>
+            <div id="map" style="height: 400px; width: 100%;" class="border rounded"></div>
+            <small class="form-text text-muted">Click on the map to set the company's location</small>
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
+        </div>
+        
+        <button class="btn btn-primary" type="submit">Create Company</button>
     </form>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var map = L.map('map').setView([40.39043439916734, -3.7866985501527037], 13);
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var map = L.map('map').setView([40.39043439916734, -3.7866985501527037], 13);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
-            var marker;
+        var marker;
 
-            map.on('click', function(e) {
-                var lat = e.latlng.lat;
-                var lng = e.latlng.lng;
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lng = e.latlng.lng;
 
-                if (marker) {
-                    map.removeLayer(marker);
-                }
+            if (marker) {
+                map.removeLayer(marker);
+            }
 
-                marker = L.marker([lat, lng]).addTo(map);
+            marker = L.marker([lat, lng]).addTo(map);
 
-                document.getElementById('latitude').value = lat;
-                document.getElementById('longitude').value = lng;
-            });
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lng;
         });
-    </script>
+    });
+</script>
 {% endblock %}

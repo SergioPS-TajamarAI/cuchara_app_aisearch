@@ -5,10 +5,20 @@
 <div class="container my-4 bg-light rounded p-4" style="max-width: 800px;">
     <h1>¿Qué deseas comer?</h1>
     <p>Introduce lo que quieras comer</p>
+    
+    {% if messages %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    
     <h3>{{user_location}}</h3>
     <form method="post">
         {% csrf_token %}
-        <input type="text" name="q" id="search-input" class="form-control mb-3" value="{{ query }}" placeholder="Enter keyword">
+        <input type="text" name="q" id="search-input" class="form-control mb-3" value="{{ query }}" placeholder="Introduce un plato, por ejemplo sopa">
         <div id="suggestions" class="list-group"></div>
         <p>Selecciona la ubicación donde te encuentras, para buscar el restaurante más cercano</p>
         <div id="map" style="height: 400px; width: 100%;"></div>
@@ -19,31 +29,55 @@
 </div>
 
 {% if results %}
-    <h2>Results</h2>
-    <p>Los siguientes restaurantes tienen el término buscado dentro de su menú:</p>
-    <ul>
+<div class="container my-4 bg-light rounded p-4" style="max-width: 800px;">
+    <h2 class="mb-3">Resultados de Búsqueda</h2>
+    <p class="text-muted mb-4">Los siguientes restaurantes tienen el término buscado dentro de su menú:</p>
+    
+    <div class="row">
         {% for result in results %}
-            <li class="container border p-3 mb-3">
-                <h5>Descarga el menú aqui de {{result.company_name}}:</h5>
-                <p>Distance: {{ result.distance }} km</p>
-                <p>Coordinates: lat:{{result.latitude}}, lon:{{result.longitude}}</p>
-                <form method="post" action="{% url 'get_file' %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="file_name" value="{{ result.metadata_storage_name }}">
-                    <button type="submit" class="btn btn-secondary">{{ result.metadata_storage_name }}</button>
-                </form>
+            <div class="col-12 mb-4"></span>
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="m-0">{{result.company_name}}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
+                                    <span>Distancia: <strong>{{ result.distance }} km</strong></span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-geo-fill me-2 text-secondary"></i>
+                                    <span>Coordenadas: <small class="text-muted">{{ result.latitude }}, {{ result.longitude }}</small></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-md-end mt-3 mt-md-0">
+                                    <form method="post" action="{% url 'get_file' %}" class="me-2">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="file_name" value="{{ result.metadata_storage_name }}">
+                                        <button type="submit" class="btn btn-outline-primary">
+                                            <i class="bi bi-download me-1"></i> Ver Menú
+                                        </button>
+                                    </form>
 
-                <form method="post" action="{% url 'menu_description' %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="raw_content" value="{{ result.content }}">
-                    <button type="submit" class="btn btn-info">Get Menu Description</button>
-                </form>
-
-                <br>
-                <!-- <p>RAW CONTENT: {{result.content}}</p> -->
-            </li>
+                                    <form method="post" action="{% url 'menu_description' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="raw_content" value="{{ result.content }}">
+                                        <button type="submit" class="btn btn-info">
+                                            <i class="bi bi-info-circle me-1"></i> Descripción
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
+</div>
 {% endif %}
 
 <script>
